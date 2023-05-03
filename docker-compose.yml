@@ -1,0 +1,68 @@
+version: "3.9"
+services:
+
+  user-service:
+    image: 'user-service:0.0.1'
+    build:
+      context: .
+    container_name: user-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      user-service-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://user-service-db:3306/user-service-db
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+
+  post-service:
+    image: 'post-service:0.0.1'
+    build:
+      context: .
+    container_name: post-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      user-service:
+        condition: service_started
+      post-service-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://post-service-db:3306/post-service-db
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+
+  user-service-db:
+    image: 'mysql/mysql-server:latest'
+    container_name: user-service-db
+    expose:
+      - "3306:3306"
+    environment:
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=user-service-db
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  post-service-db:
+    image: 'mysql/mysql-server:latest'
+    container_name: post-service-db
+    expose:
+      - "3306:3306"
+    environment:
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=post-service-db
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
