@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
 public class PostController {
@@ -28,11 +29,10 @@ public class PostController {
     private PostValidator postValidator;
     @Autowired
     private PostService postService;
-    private RestTemplate restTemplate;
 
     @GetMapping("/greeting")
     public String greeting() {
-        return "Hello, k8s!";
+        return "Hello, postService!";
     }
 
     @GetMapping("/posts/{id}")
@@ -43,10 +43,18 @@ public class PostController {
     @PostMapping("/posts")
     public PostDTO addPost(@RequestBody PostDTO postDTO) {
         postValidator.validatePost(postDTO.getText());
+        PostEntity postEntity = postRepository.save(postMapper.toEntity(postDTO));
+        int postsCount = postRepository.countByAuthorId(postDTO.getAuthorId());
         UserDTO userDTO = new UserDTO();
-        userDTO.setAmountOfPosts(1);
-        restTemplate.put("http://localhost:8080/users/posts/" + postDTO.getAuthorId(), userDTO);
-        return postMapper.toDto(postRepository.save(postMapper.toEntity(postDTO)));
+        userDTO.setAmountOfPosts(postsCount);
+        WebClient.builder().build()
+            .put()
+            .uri("http://user-service:8080/users/posts/" + postDTO.getAuthorId())
+            .body(BodyInserters.fromValue(userDTO))
+            .retrieve()
+            .bodyToMono(Void.class)
+            .subscribe();
+        return postMapper.toDto(postEntity);
     }
 
     @DeleteMapping("/posts/{id}")
@@ -57,13 +65,19 @@ public class PostController {
     }
 
     @PutMapping("/posts/{id}")
-    public void updatePostById(@PathVariable Long id, @RequestBody PostDTO postToUpdate) {
+    public void updatePostById(@PathVariable Long id, @RequestBody PostDTO postDTO) {
         PostEntity post = postService.getPostById(id);
-        post.setText(postToUpdate.getText());
-        postRepository.save(post);
+        post.setText(postDTO.getText());
+        postRepository.save(postMapper.toEntity(postDTO));
+        int postsCount = postRepository.countByAuthorId(postDTO.getAuthorId());
         UserDTO userDTO = new UserDTO();
-        userDTO.setAmountOfPosts(1);
-        restTemplate.put("http://localhost:8080/users/posts/" + post.getAuthorId(), userDTO);
+        userDTO.setAmountOfPosts(postsCount);
+        WebClient.builder().build().put()
+            .uri("http://user-service:8080/users/posts/" + postDTO.getAuthorId())
+            .body(BodyInserters.fromValue(userDTO))
+            .retrieve()
+            .bodyToMono(Void.class)
+            .subscribe();
     }
 
 }

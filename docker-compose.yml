@@ -7,7 +7,7 @@ services:
       context: .
     container_name: user-service
     ports:
-      - "8080:8080"
+      - "8082:8080"
     depends_on:
       user-service-db:
         condition: service_healthy
@@ -24,7 +24,7 @@ services:
       context: .
     container_name: post-service
     ports:
-      - "8081:8081"
+      - "8081:8080"
     depends_on:
       user-service:
         condition: service_started

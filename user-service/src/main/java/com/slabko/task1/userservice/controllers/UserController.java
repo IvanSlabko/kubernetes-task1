@@ -29,7 +29,7 @@ public class UserController {
 
     @GetMapping("/greeting")
     public String greeting() {
-        return "Hello, k8s!";
+        return "Hello, userService!";
     }
 
     @GetMapping("/users/{id}")
@@ -59,7 +59,7 @@ public class UserController {
     @PutMapping("/users/posts/{id}")
     public void updateUserPostAmountById(@PathVariable Long id, @RequestBody UserDTO userToUpdate) {
         UserEntity user = userService.getUserById(id);
-        user.setAmountOfPosts(user.getAmountOfPosts() + userToUpdate.getAmountOfPosts());
+        user.setAmountOfPosts(userToUpdate.getAmountOfPosts());
         userRepository.save(user);
     }
 
