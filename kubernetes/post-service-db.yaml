@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-post-service-db-deployment
+  labels:
+    app: k8s-post-service-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-post-service-db
+  template:
+    metadata:
+      labels:
+        app: k8s-post-service-db
+    spec:
+      containers:
+      - name: k8s-post-service-db
+        image: mysql/mysql-server:latest
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: post-service-db-secret
+              key: post-service-db-username
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: post-service-db-secret
+              key: post-service-db-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-post-service-db-service
+spec:
+  selector:
+    app: k8s-post-service-db
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-user-service-deployment
+  labels:
+    app: k8s-user-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-user-service-deployment
+  template:
+    metadata:
+      labels:
+        app: k8s-user-service-deployment
+    spec:
+      containers:
+        - name: k8s-user-service-deployment
+          image: epamivanslabko/user-service:0.0.1
+          ports:
+            - containerPort: 8082
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-secret
+                  key: user-service-db-username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-secret
+                  key: user-service-db-password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: user-service-db-configmap
+                  key: database_url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-user-service
+spec:
+  selector:
+    app: k8s-user-service-deployment
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+      nodePort: 30020
+

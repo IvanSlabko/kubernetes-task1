@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-post-service-deployment
+  labels:
+    app: k8s-post-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-post-service-deployment
+  template:
+    metadata:
+      labels:
+        app: k8s-post-service-deployment
+    spec:
+      containers:
+        - name: k8s-post-service-deployment
+          image: epamivanslabko/post-service:0.0.1
+          ports:
+          - containerPort: 8081
+          env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: post-service-db-secret
+                key: post-service-db-username
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: post-service-db-secret
+                key: post-service-db-password
+          - name: MYSQL_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: post-service-db-configmap
+                key: database_url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-post-service
+spec:
+  selector:
+    app: k8s-post-service-deployment
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+      nodePort: 30000
+
