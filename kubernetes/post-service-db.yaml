@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: k8s-post-service-db-deployment
+  namespace: task2.post-service
   labels:
     app: k8s-post-service-db
 spec:
@@ -34,7 +35,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: k8s-post-service-db-service
+  name: post-service-db
+  namespace: task2.post-service
 spec:
   selector:
     app: k8s-post-service-db

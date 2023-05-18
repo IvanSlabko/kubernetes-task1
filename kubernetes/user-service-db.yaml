@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: k8s-user-service-db-deployment
+  namespace: task2.user-service
   labels:
     app: k8s-user-service-db
 spec:
@@ -34,7 +35,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: k8s-user-service-db-service
+  name: user-service-db
+  namespace: task2.user-service
 spec:
   selector:
     app: k8s-user-service-db
