@@ -19,7 +19,7 @@ spec:
         - name: k8s-user-service-deployment
           image: epamivanslabko/user-service:0.0.1
           ports:
-            - containerPort: 8082
+            - containerPort: 8080
           env:
             - name: MYSQL_USER
               valueFrom:
@@ -48,7 +48,7 @@ spec:
   type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 8082
-      targetPort: 8082
+      port: 8080
+      targetPort: 8080
       nodePort: 30002
 
